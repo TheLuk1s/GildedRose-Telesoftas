@@ -19,7 +19,7 @@ class ItemHandler
     	$this->defaultQuality = $defaultQuality;
     }
 
-    public function getItemData(Item $item) : self
+    public function getItemData(Item $item): self
     {
 		switch ($item->name) {
             case AgedBrie::NAME:
