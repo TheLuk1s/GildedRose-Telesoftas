@@ -5,7 +5,7 @@ declare(strict_types=1);
 namespace Tests;
 
 use GildedRose\GildedRose;
-use GildedRose\Storage;
+use GildedRose\Storage\StorageHandler;
 use GildedRose\Item;
 use PHPUnit\Framework\TestCase;
 
@@ -18,6 +18,8 @@ class GildedRoseTest extends TestCase
     {
     	$items = [new Item('Any', 1, 1)];
     	$gildedRose = new GildedRose($items);
+
+        $gildedRose->fixData();
     	$gildedRose->updateQuality();
 
     	# Checking if those two values lowers by 1
@@ -30,6 +32,8 @@ class GildedRoseTest extends TestCase
     {
     	$items = [new Item('Any', 0, 2)];
     	$gildedRose = new GildedRose($items);
+
+        $gildedRose->fixData();
     	$gildedRose->updateQuality();
 
     	# Checking if quality degraded by 2
@@ -41,6 +45,8 @@ class GildedRoseTest extends TestCase
     {
     	$items = [new Item('Any', 0, 0)];
     	$gildedRose = new GildedRose($items);
+
+        $gildedRose->fixData();
     	$gildedRose->updateQuality();
 
     	# Checking if quality is still 0 after leaving it 0 for a day
@@ -52,6 +58,8 @@ class GildedRoseTest extends TestCase
     {
     	$items = [new Item('Aged Brie', 1, 0)];
     	$gildedRose = new GildedRose($items);
+
+        $gildedRose->fixData();
     	$gildedRose->updateQuality();
 
     	# Checking if quality increased by 1 when initial is 0
@@ -63,6 +71,8 @@ class GildedRoseTest extends TestCase
     {
     	$items = [new Item('Aged Brie', 1, 50)];
     	$gildedRose = new GildedRose($items);
+
+        $gildedRose->fixData();
     	$gildedRose->updateQuality();
 
     	#Checking if quality of the item is 50 after initial 50
@@ -74,17 +84,21 @@ class GildedRoseTest extends TestCase
     {
     	$items = [new Item('Sulfuras, Hand of Ragnaros', 1, 80)];
     	$gildedRose = new GildedRose($items);
+
+        $gildedRose->fixData();
     	$gildedRose->updateQuality();
 
     	#Checking if quality of the legendary item is 80 after initial 80
     	$this->assertSame(80, $items[0]->quality);
     }
 
-    #7 "Sulfuras", being a legendary item, never has to be sold or decreases in Quality
+    #7.1 "Sulfuras", being a legendary item, never has to be sold or decreases in Quality
     public function testSulfurasUnitsStability(): void
     {
     	$items = [new Item('Sulfuras, Hand of Ragnaros', 100, 80)];
     	$gildedRose = new GildedRose($items);
+
+        $gildedRose->fixData();
     	$gildedRose->updateQuality();
 
     	#Checking if quality and sell_in stays the same for legendary items
@@ -92,11 +106,26 @@ class GildedRoseTest extends TestCase
     	$this->assertSame(100, $items[0]->sell_in);
     }
 
+    #7.2 "Sulfuras", being a legendary item, never has to be sold or decreases in Quality
+    public function testSulfurasUnitsRecover(): void
+    {
+        $items = [new Item('Sulfuras, Hand of Ragnaros', 100, 30)];
+        $gildedRose = new GildedRose($items);
+
+        $gildedRose->fixData();
+        $gildedRose->updateQuality();
+
+        #Checking if quality gets to 80 if is lower
+        $this->assertSame(80, $items[0]->quality);
+    }
+
     #8.1 "Backstage passes", like aged brie, increases in Quality as its SellIn value approaches
     public function testBackstagePassQualityIncrease(): void
     {
     	$items = [new Item('Backstage passes to a TAFKAL80ETC concert', 15, 0)];
     	$gildedRose = new GildedRose($items);
+
+        $gildedRose->fixData();
     	$gildedRose->updateQuality();
 
     	#Checking if backstage passes increases by 1
@@ -108,6 +137,8 @@ class GildedRoseTest extends TestCase
     {
     	$items = [new Item('Backstage passes to a TAFKAL80ETC concert', 10, 0)];
     	$gildedRose = new GildedRose($items);
+
+        $gildedRose->fixData();
     	$gildedRose->updateQuality();
 
     	#Checking if backstage passes increases by 2 when 10 days left
@@ -119,6 +150,8 @@ class GildedRoseTest extends TestCase
     {
     	$items = [new Item('Backstage passes to a TAFKAL80ETC concert', 5, 0)];
     	$gildedRose = new GildedRose($items);
+
+        $gildedRose->fixData();
     	$gildedRose->updateQuality();
 
     	#Checking if backstage passes increases by 3 when 5 days left
@@ -130,6 +163,8 @@ class GildedRoseTest extends TestCase
     {
     	$items = [new Item('Backstage passes to a TAFKAL80ETC concert', 0, 100)];
     	$gildedRose = new GildedRose($items);
+
+        $gildedRose->fixData();
     	$gildedRose->updateQuality();
 
     	#Checking if backstage passes quality drops to 0 when concert is over
@@ -137,12 +172,11 @@ class GildedRoseTest extends TestCase
     }
 
     #9 "Conjured" items degrade in Quality twice as fast as normal items
-    # LEAVING FOR UPDATE
-    // public function testCojuredItemDegration(): void
-    // {
-    // 	$items = [new Item('Conjured Mana Cake', 1, 100)];
-    // 	$gildedRose = new GildedRose($items);
-    // 	$gildedRose->updateQuality();
-    // 	$this->assertSame(98, $items[0]->quality);
-    // }
+    public function testCojuredItemDegration(): void
+    {
+    	$items = [new Item('Conjured Mana Cake', 1, 100)];
+    	$gildedRose = new GildedRose($items);
+    	$gildedRose->updateQuality();
+    	$this->assertSame(98, $items[0]->quality);
+    }
 }
