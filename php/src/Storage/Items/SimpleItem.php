@@ -5,7 +5,10 @@ namespace GildedRose\Storage\Items;
 
 abstract class SimpleItem
 {
-	public const QUALITY_STEPS = ['Default' => -1];
+	public const QUALITY_STEPS = [
+									0         => -2,
+									'Default' => -1
+								 ];
 	public const AGEING = true;
 }
 
