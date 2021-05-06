@@ -11,16 +11,35 @@ use GildedRose\Storage\Items\AgedBrie;
 final class GildedRose
 {
     /**
-     * @var Item[]
+     * Item array
+     *
+     * @var array $items[]
      */
     private $items;
 
+    /**
+     * ItemHandler object to get item data
+     *
+     * @var ItemHandler $handler
+     */
+    private ItemHandler $handler;
+
+
+    /**
+     * Class constructor
+     *
+     * @param array $items
+     */
     public function __construct(array $items)
     {
         $this->items = $items;
         $this->handler = new ItemHandler();
     }
 
+    /**
+     * Passes one day
+     *
+     */
     public function updateQuality(): void
     {
         foreach ($this->items as $item) {
@@ -31,13 +50,17 @@ final class GildedRose
         }
     }
 
+    /**
+     * Fixes incorrect data
+     *
+     */
     public function fixData(): void
     {
         foreach ($this->items as $item) {
             $itemData = $this->handler->getItemData($item);
 
             if(!is_null($itemData->defaultQuality))
-                $item->quality = $itemData->defaultQuality;
+                ItemUpdator::setQuality($item, $itemData->defaultQuality);
         }
     }
 }
